@@ -130,23 +130,20 @@ fn field_type_to_read_method(
         // Handling Vec<T>
         Type::Path(TypePath { path, .. }) if path.segments.last().unwrap().ident == "Vec" => {
             if let PathArguments::AngleBracketed(ref args) = path.segments.last().unwrap().arguments
+                && let Some(GenericArgument::Type(inner_type)) = args.args.first()
             {
-                if let Some(GenericArgument::Type(inner_type)) = args.args.first() {
-                    if let Type::Path(TypePath { path, .. }) = inner_type {
-                        if path.is_ident("u8") {
-                            let read_method = wrap_option(quote! { pb.read_bytes() });
-                            return Some(
-                                quote! { #field_index => self.#field_name = #read_method, },
-                            );
-                        }
-                    }
-                    let read_packed = if attr.signed {
-                        wrap_option(quote! { pb.read_s_packed() })
-                    } else {
-                        wrap_option(quote! { pb.read_packed() })
-                    };
-                    return Some(quote! { #field_index => self.#field_name = #read_packed, });
+                if let Type::Path(TypePath { path, .. }) = inner_type
+                    && path.is_ident("u8")
+                {
+                    let read_method = wrap_option(quote! { pb.read_bytes() });
+                    return Some(quote! { #field_index => self.#field_name = #read_method, });
                 }
+                let read_packed = if attr.signed {
+                    wrap_option(quote! { pb.read_s_packed() })
+                } else {
+                    wrap_option(quote! { pb.read_packed() })
+                };
+                return Some(quote! { #field_index => self.#field_name = #read_packed, });
             }
             None
         }
@@ -154,16 +151,9 @@ fn field_type_to_read_method(
         // Handling Option<T>
         Type::Path(TypePath { path, .. }) if path.segments.last().unwrap().ident == "Option" => {
             if let PathArguments::AngleBracketed(ref args) = path.segments.last().unwrap().arguments
+                && let Some(GenericArgument::Type(inner_type)) = args.args.first()
             {
-                if let Some(GenericArgument::Type(inner_type)) = args.args.first() {
-                    return field_type_to_read_method(
-                        inner_type,
-                        field_name,
-                        field_index,
-                        attr,
-                        true,
-                    );
-                }
+                return field_type_to_read_method(inner_type, field_name, field_index, attr, true);
             }
             None
         }
@@ -319,21 +309,20 @@ fn field_type_to_read_enum(
         // Handling Vec<T>
         Type::Path(TypePath { path, .. }) if path.segments.last().unwrap().ident == "Vec" => {
             if let PathArguments::AngleBracketed(ref args) = path.segments.last().unwrap().arguments
+                && let Some(GenericArgument::Type(inner_type)) = args.args.first()
             {
-                if let Some(GenericArgument::Type(inner_type)) = args.args.first() {
-                    if let Type::Path(TypePath { path, .. }) = inner_type {
-                        if path.is_ident("u8") {
-                            let read_method = wrap_option(quote! { pb.read_bytes() });
-                            return Some(quote! { #name::#variant_name(#read_method) });
-                        }
-                    }
-                    let read_packed = if attr.signed {
-                        wrap_option(quote! { pb.read_s_packed() })
-                    } else {
-                        wrap_option(quote! { pb.read_packed() })
-                    };
-                    return Some(quote! { #name::#variant_name(#read_packed) });
+                if let Type::Path(TypePath { path, .. }) = inner_type
+                    && path.is_ident("u8")
+                {
+                    let read_method = wrap_option(quote! { pb.read_bytes() });
+                    return Some(quote! { #name::#variant_name(#read_method) });
                 }
+                let read_packed = if attr.signed {
+                    wrap_option(quote! { pb.read_s_packed() })
+                } else {
+                    wrap_option(quote! { pb.read_packed() })
+                };
+                return Some(quote! { #name::#variant_name(#read_packed) });
             }
             None
         }
@@ -341,10 +330,9 @@ fn field_type_to_read_enum(
         // Handling Option<T>
         Type::Path(TypePath { path, .. }) if path.segments.last().unwrap().ident == "Option" => {
             if let PathArguments::AngleBracketed(ref args) = path.segments.last().unwrap().arguments
+                && let Some(GenericArgument::Type(inner_type)) = args.args.first()
             {
-                if let Some(GenericArgument::Type(inner_type)) = args.args.first() {
-                    return field_type_to_read_enum(inner_type, name, variant_name, attr, true);
-                }
+                return field_type_to_read_enum(inner_type, name, variant_name, attr, true);
             }
             None
         }

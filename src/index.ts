@@ -74,7 +74,7 @@ export class BasePbf {
 export class PbfReader extends BasePbf {
   /**
    * Reads a tag from the buffer, pulls out the tag and type and returns it.
-   * @returns - {tag: number, type: number}
+   * @returns `{tag: number, type: number}`
    */
   readTag(): Tag {
     const input = this.readVarint();
@@ -236,11 +236,9 @@ export class PbfReader extends BasePbf {
    */
   readVarint(isSigned = false): number {
     const buf = this.buf;
-    let val;
-    let b;
 
-    b = buf[this.pos++];
-    val = b & 0x7f;
+    let b = buf[this.pos++];
+    let val = b & 0x7f;
     if (b < 0x80) return val;
     b = buf[this.pos++];
     val |= (b & 0x7f) << 7;
@@ -900,11 +898,9 @@ export class Pbf extends PbfReader {
  */
 function readVarintRemainder(l: number, s: boolean, p: Pbf | PbfReader): number {
   const buf = p.buf;
-  let h;
-  let b;
 
-  b = buf[p.pos++];
-  h = (b & 0x70) >> 4;
+  let b = buf[p.pos++];
+  let h = (b & 0x70) >> 4;
   if (b < 0x80) return toNum(l, h, s);
   b = buf[p.pos++];
   h |= (b & 0x7f) << 3;
@@ -955,7 +951,7 @@ function toNum(low: number, high: number, isSigned: boolean): number {
  * @param pbf - the protobuf
  */
 function writeBigVarint(val: number, pbf: Pbf): void {
-  let low = val % 0x100000000 | 0;
+  let low = (val % 0x100000000) | 0;
   let high = (val / 0x100000000) | 0;
 
   if (val < 0) {

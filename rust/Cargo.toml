@@ -15,16 +15,16 @@ license.workspace = true
 # Include only specific files and directories
 # include = ["rust/**", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE"]
 exclude = [
-    "/assets",
-    "/coverage",
-    "/benchmarks",
-    "/dist",
-    "/node_modules",
-    "/target",
-    "/docs",
-    "/tests",
-    "/tools",
-    "/src",
+  "/assets",
+  "/coverage",
+  "/benchmarks",
+  "/dist",
+  "/node_modules",
+  "/target",
+  "/docs",
+  "/tests",
+  "/tools",
+  "/src",
 ]
 
 [lib]

@@ -204,24 +204,20 @@ fn field_type_to_write_method(
         // Handling Vec<T> (bytes fields)
         Type::Path(TypePath { path, .. }) if path.segments.last().unwrap().ident == "Vec" => {
             if let PathArguments::AngleBracketed(ref args) = path.segments.last().unwrap().arguments
-            {
-                if let Some(GenericArgument::Type(Type::Path(TypePath { path, .. }))) =
+                && let Some(GenericArgument::Type(Type::Path(TypePath { path, .. }))) =
                     args.args.first()
-                {
-                    if path.segments.last().unwrap().ident == "u8" {
-                        // If the type inside Vec is u8, use write_bytes_field
-                        return Some(quote! { pbf.write_bytes_field(#field_index, &#name_st); });
+            {
+                if path.segments.last().unwrap().ident == "u8" {
+                    // If the type inside Vec is u8, use write_bytes_field
+                    return Some(quote! { pbf.write_bytes_field(#field_index, &#name_st); });
+                } else {
+                    // Otherwise, use packed
+                    if attr.signed {
+                        return Some(
+                            quote! { pbf.write_packed_s_varint(#field_index, &#name_st); },
+                        );
                     } else {
-                        // Otherwise, use packed
-                        if attr.signed {
-                            return Some(
-                                quote! { pbf.write_packed_s_varint(#field_index, &#name_st); },
-                            );
-                        } else {
-                            return Some(
-                                quote! { pbf.write_packed_varint(#field_index, &#name_st); },
-                            );
-                        }
+                        return Some(quote! { pbf.write_packed_varint(#field_index, &#name_st); });
                     }
                 }
             }
@@ -231,18 +227,15 @@ fn field_type_to_write_method(
         // Handling Option<T>
         Type::Path(TypePath { path, .. }) if path.segments.last().unwrap().ident == "Option" => {
             if let PathArguments::AngleBracketed(ref args) = path.segments.last().unwrap().arguments
+                && let Some(GenericArgument::Type(inner_type)) = args.args.first()
+                && let Some(internal_field) =
+                    field_type_to_write_method(inner_type, field_name, field_index, attr, true)
             {
-                if let Some(GenericArgument::Type(inner_type)) = args.args.first() {
-                    if let Some(internal_field) =
-                        field_type_to_write_method(inner_type, field_name, field_index, attr, true)
-                    {
-                        return Some(quote! {
-                            if let Some(#field_name) = &#name {
-                                #internal_field
-                            }
-                        });
+                return Some(quote! {
+                    if let Some(#field_name) = &#name {
+                        #internal_field
                     }
-                }
+                });
             }
             None
         }

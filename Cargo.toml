@@ -4,7 +4,8 @@ default-members = ["rust"]
 resolver = "2"
 
 [workspace.package]
-version = "1.22.0"
+version = "1.22.1"
+rust-version = "1.91.0"
 edition = "2024"
 authors = ["Craig O'Connor <oconnorct1@gmail.com>"]
 description = "Mininmal protobuffer module; Build your own glue."
@@ -17,8 +18,8 @@ keywords = ["pbf", "protobuffers", "minimal", "low-cost-code"]
 license = "MIT"
 
 [workspace.dependencies]
-pbf-core = { path = "rust-core", version = "1.22.0" }
-pbf-derive = { path = "rust-derive", version = "1.22.0" }
+pbf-core = { path = "rust-core", version = "1.22.1" }
+pbf-derive = { path = "rust-derive", version = "1.22.1" }
 
 [profile.bench]
 opt-level = 3
